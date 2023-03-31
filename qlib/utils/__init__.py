@@ -224,7 +224,7 @@ def requests_with_retry(url, retry=5, **kwargs):
         except Exception as e:
             log.warning("exception encountered {}".format(e))
             continue
-    raise Exception("ERROR: requests failed!")
+    raise TimeoutError("ERROR: requests failed!")
 
 
 #################### Parse ####################
@@ -426,7 +426,8 @@ def init_instance_by_config(
             # path like 'file:///<path to pickle file>/obj.pkl'
             pr = urlparse(config)
             if pr.scheme == "file":
-                with open(os.path.join(pr.netloc, pr.path), "rb") as f:
+                pr_path = os.path.join(pr.netloc, pr.path) if bool(pr.path) else pr.netloc
+                with open(pr_path, "rb") as f:
                     return pickle.load(f)
         else:
             with config.open("rb") as f:
